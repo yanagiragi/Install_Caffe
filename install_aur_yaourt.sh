@@ -7,3 +7,4 @@ cd package-query
 makepkg -si
 cd ../yaourt
 makepkg -si
+exit
