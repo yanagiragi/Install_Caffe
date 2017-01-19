@@ -32,6 +32,10 @@ sudo make all -j2
 sudo make test
 sudo make runtest # check if you see "PASSED!" 
 
+# if not passed and err msgs looks like test_gradient_based_solver fails
+# check https://github.com/BVLC/caffe/issues/3109
+# try export MKL_CBWR=AUTO
+
 # if compile errors with hdf5.h : No such file or Directory
 sudo apt-get install libhdf5-dev
 
