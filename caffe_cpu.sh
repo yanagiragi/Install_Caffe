@@ -48,6 +48,9 @@ cd -
 # For Python
 sudo apt-get install python2.7 # I use python2.7
 sudo make pycaffe
+# if err msg : numpy/arrayobject.h: No such file or directory
+sudo apt-get install python-numpy
+
 cd python/
 for req in $(cat requirements.txt); do pip install $req; done
 
