@@ -75,6 +75,9 @@ make pycaffe
 cd python
 pip install -U -r requirements.txt
 
+# if setuptools error
+pip install setuptools
+
 # test caffe
 python
 import caffe
@@ -136,14 +139,16 @@ pip install -U scikit-image
 # but we installed some libs in /usr/local/cuda/lib64
 
 cd /usr/lib/x86_64-linux-gnu/
-sudo ln -s libglog.so /usr/local/lib/libglog.so
 sudo ln -s /usr/local/lib/libglog.so libglog.so
 sudo ln -s /usr/local/lib/libglog.so.0 libglog.so.0
+sudo ln -s /usr/local/lib/liblmdb.so liblmdb.so
 sudo ln -s /usr/local/cuda/lib64/libcudnn.so libcudnn.so
 sudo ln -s /usr/local/cuda/lib64/libcudnn.so.5 libcudnn.so.5
 
 # if no _thinker module found
-sudo apt-get install python-tk
+sudo apt-get install python3-tk
+# or
+sudo apt-get install python2.7-tk
 
 # if no module named _caffe
 export PYTHONPATH=/path/to/caffe/python
