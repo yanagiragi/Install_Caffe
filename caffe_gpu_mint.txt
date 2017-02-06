@@ -1,0 +1,152 @@
+Ref: http://sunxg13.github.io/2015/09/10/caffe/
+
+#Dependicies
+sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+sudo apt-get install --no-install-recommends libboost-all-dev
+
+#BLAS
+sudo apt-get install libatlas-base-dev	
+
+# OpenCV
+sudo apt-get update   
+sudo apt-get upgrade  # 更新
+
+### 安装依赖库
+sudo apt-get install build-essential  
+sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev  
+
+### 安装opencv
+sudo cmake .
+sudo make
+sudo make install
+
+### 配置环境变量
+sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
+sudo ldconfig
+# sudo gedit /etc/bash.bashrc
+PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+export PKG_CONFIG_PATH
+
+### 编译samples程序：
+cd samples
+sudo cmake .
+sudo make -j $(nproc) 
+cd cpp
+
+### 运行测试程序：
+sudo ./cpp-example-facedetect ../data/lena.jpg
+
+git clone git://github.com/BVLC/caffe.git
+cp Makefile.config.example Makefile.confg
+
+#Modified Makefile to:
+LIBRARIES += glog gflags protobuf leveldb snappy \
+lmdb boost_system hdf5_hl hdf5 m \
+opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs
+
+### GPU Version
+
+# check Ref
+sudo dpkg -i $(cuda_8.0).deb
+sudo apt-get update
+sudo apt-get insatll cuda
+
+# use `sudo ./deviceQuery` for checking supports
+
+# 下载CuDNN库文件:cudnn-7.0-linux-x64-v3.0-rc.tgz
+tar -xzvf cudnn-7.0-linux-x64-v3.0-rc.tgz
+cd cuda/lib64
+sudo cp lib* /usr/local/cuda/lib64/
+cd ..
+cd include
+sudo cp cudnn.h /usr/local/cuda/include/
+
+#在~/caffe/Makefile.config中，将# USE_CUDNN := 1的注释去掉，
+#即：USE_CUDNN := 1，并重新编译
+
+# Caffe Compilation
+
+make clean
+make all -j4
+make test -j4
+make runtest -j4
+make pycaffe
+cd python
+pip install -U -r requirements.txt
+
+# test caffe
+python
+import caffe
+print caffe.__version__
+
+
+# if error happens
+
+### if error with glog
+### 安装glog/gflags/lmdb
+
+##### glog
+wget https://google-glog.googlecode.com/files/glog-0.3.3.tar.gz
+tar zxvf glog-0.3.3.tar.gz
+cd glog-0.3.3
+./configure
+make && make install
+
+##### if error with install glog, try:
+autoreconf --force --install
+./configure
+make && make install
+
+
+##### gflags
+wget https://github.com/schuhschuh/gflags/archive/master.zip
+unzip master.zip
+cd gflags-master
+mkdir build && cd build
+export CXXFLAGS="-fPIC" && cmake .. && make VERBOSE=1
+make && make install
+
+##### lmdb
+git clone https://gitorious.org//mdb/mdb.git
+cd mdb/libraries/liblmdb
+make && make install
+
+# if hdf5.h not found
+# Sol1: check so link
+cd /usr/lib/x86_64-linux-gnu
+sudo ln -s libhdf5_serial.so.8.0.2 libhdf5.so
+sudo ln -s libhdf5_serial_hl.so.8.0.2 libhdf5_hl.so
+
+# if still don't works
+# Sol2 : modified Makefile.config
+Makefile.config
+-INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include
+-LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib
++INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial/
++LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu/hdf5/serial/
+
+# error in import caffe in python
+
+# if "No module named skimage.io" error appears when import caffe in python
+pip install -U scikit-image
+
+# if "No ****.so " errors
+# it may because it default find so in /usr/lib/x86_64linux
+# but we installed some libs in /usr/local/cuda/lib64
+
+cd /usr/lib/x86_64-linux-gnu/
+sudo ln -s libglog.so /usr/local/lib/libglog.so
+sudo ln -s /usr/local/lib/libglog.so libglog.so
+sudo ln -s /usr/local/lib/libglog.so.0 libglog.so.0
+sudo ln -s /usr/local/cuda/lib64/libcudnn.so libcudnn.so
+sudo ln -s /usr/local/cuda/lib64/libcudnn.so.5 libcudnn.so.5
+
+# if no _thinker module found
+sudo apt-get install python-tk
+
+# if no module named _caffe
+export PYTHONPATH=/path/to/caffe/python
+
+# if no module named _caffe
+# try cd .. (as long as you are not in /path/to/caffe/python)
